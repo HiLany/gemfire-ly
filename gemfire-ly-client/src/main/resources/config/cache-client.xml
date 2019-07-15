@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:gfe="http://www.springframework.org/schema/gemfire"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+    <bean id="yamlProperties" class="org.springframework.beans.factory.config.YamlPropertiesFactoryBean">
+    <property name="resources" value="classpath:application.yml"/>
+</bean>
+
+    <util:properties id="gemfireProperties" location="classpath:config/gemfire.properties"/>
+
+    <!--<util:properties id="gemfireProperties">-->
+        <!--<prop key="security-client-auth-init">com.ly.client.security.UserPasswordAuthInit.create</prop>-->
+        <!--<prop key="security-username">admin</prop>-->
+        <!--<prop key="security-password">passw0rd</prop>-->
+        <!--<prop key="log-level">config</prop>-->
+    <!--</util:properties>-->
+
+    <context:property-placeholder properties-ref="yamlProperties"/>
+
+    <!--create gemfire connection pool-->
+    <gfe:pool id="gemfirePool" pr-single-hop-enabled="true" max-connections="-1" >
+        <gfe:locator  host="${gemfire.locator.host}" port="${gemfire.locator.port}"/>
+    </gfe:pool>
+
+    <gfe:client-cache id="gemfireCache"  pdx-read-serialized="true" pool-name="gemfirePool" properties-ref="gemfireProperties"/>
+
+     <!--proxy region -->
+    <gfe:client-region id="organization" cache-ref="gemfireCache" pool-name="gemfirePool" shortcut="PROXY"/>
+
+    <!--<gfe:client-region id="jdccr" shortcut="PROXY"/>-->
+
+
+</beans>

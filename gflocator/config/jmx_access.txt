@@ -1,0 +1,2 @@
+manager readwrite
+access readonly

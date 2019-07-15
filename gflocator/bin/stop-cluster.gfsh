@@ -1,0 +1,9 @@
+
+# connect cluster
+
+connect --locator=localhost[10334] --user=admin --password=passw0rd
+
+
+# shutdown --include locators
+
+shutdown --include-locators=true --time-out=10

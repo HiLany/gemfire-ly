@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: gemfire-ly-client
+server:
+  port: 8089
+gemfire:
+  locator:
+    host: localhost
+    port: 10334

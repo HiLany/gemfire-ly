@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache
+        xmlns="http://geode.apache.org/schema/cache"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gpdb="http://schema.pivotal.io/gemfire/gpdb"
+        xsi:schemaLocation="http://geode.apache.org/schema/cache
+            http://geode.apache.org/schema/cache/cache-1.0.xsd
+            http://schema.pivotal.io/gemfire/gpdb
+            http://schema.pivotal.io/gemfire/gpdb/gpdb-2.4.xsd"
+        version="1.0">
+
+    <cache-server port="40404" message-time-to-live="600"/>
+
+    <!-- 定义持久化存储 -->
+    <disk-store name="pdxPersistenStore" auto-compact="true" max-oplog-size="1024" queue-size="10000" time-interval="15">
+        <disk-dirs>
+            <disk-dir dir-size="4096">pdxPersisData</disk-dir>
+        </disk-dirs>
+    </disk-store>
+
+    <!-- 配置pdx序列化 -->
+    <pdx read-serialized="true" persistent="true" disk-store-name="pdxPersistenStore">
+        <pdx-serializer>
+            <class-name>org.apache.geode.pdx.ReflectionBasedAutoSerializer</class-name>
+            <parameter name="classes">
+                <string>com.ly.domain.entity.*</string>
+            </parameter>
+        </pdx-serializer>
+    </pdx>
+
+    <jndi-bindings>
+        <jndi-binding jndi-name="DemoDatasource" type="SimpleDataSource"
+                      jdbc-driver-class="org.postgresql.Driver" user-name="gpadmin"
+                      password="gpadmin" connection-url="jdbc:postgresql://100.28.22.7:5432/ja-iap">
+        </jndi-binding>
+    </jndi-bindings>
+
+    <!-- 定义region: organization -->
+    <region name="organization" refid="REPLICATE">
+        <region-attributes  statistics-enabled="true">
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>com.ly.domain.entity.Organization</value-constraint>
+            <!--<partition-attributes local-max-memory="512" redundant-copies="1" recovery-delay="-1"/>-->
+        </region-attributes>
+    </region>
+
+    <region name="jdccr">
+        <region-attributes data-policy="partition" statistics-enabled="true">
+            <key-constraint>java.lang.String</key-constraint>
+            <!--<value-constraint>com.ly.domain.entity.Jdccr</value-constraint>-->
+            <entry-time-to-live>
+                <expiration-attributes timeout="86400" action="destroy">
+                </expiration-attributes>
+            </entry-time-to-live>
+            <partition-attributes redundant-copies="1" />
+        </region-attributes>
+        <gpdb:store datasource="DemoDatasource">
+            <gpdb:types>
+                <gpdb:pdx name="com.ly.domain.entity.Jdccr"
+                          schema="public"
+                          table="jdccr">
+                    <gpdb:id field="id" />
+                    <gpdb:fields>
+                        <gpdb:field name="id"  column="id" />
+                        <gpdb:field name="sbbh"  column="sb_bh" />
+                        <gpdb:field name="sbmc"  column="sbmc" />
+                        <gpdb:field name="jdccsysdm"  column="jdccsysdm" />
+                        <gpdb:field name="clpp"  column="clpp" />
+                        <gpdb:field name="cllx"  column="cllx" />
+                        <gpdb:field name="jdchpzldm"  column="jdchpzldm" />
+                        <gpdb:field name="jdchphm"  column="jdchphm" />
+                        <gpdb:field name="fx"  column="fx" />
+                        <gpdb:field name="dlwz"  column="dlwz" />
+                        <gpdb:field name="fxsj"  column="fxsj" />
+                        <gpdb:field name="zp"  column="zp" />
+                        <gpdb:field name="cpys"  column="cpys" />
+                        <gpdb:field name="dqjd"  column="dqjd" />
+                        <gpdb:field name="dqwd"  column="dqwd" />
+                        <gpdb:field name="zdclpdbs"  column="zdcl_pdbs" />
+                        <gpdb:field name="cjcsdm"  column="cjcs_dm" />
+                        <gpdb:field name="cjxqdm"  column="cjxq_dm" />
+                        <gpdb:field name="rksj"  column="rksj" />
+                    </gpdb:fields>
+                </gpdb:pdx>
+            </gpdb:types>
+        </gpdb:store>
+
+    </region>
+
+    <!-- 资源管理 -->
+    <resource-manager critical-heap-percentage="75" eviction-heap-percentage="65"/>
+
+</cache>
